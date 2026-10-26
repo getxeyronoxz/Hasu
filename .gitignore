@@ -29,3 +29,14 @@ logs/
 # Junk
 .DS_Store
 Thumbs.db
+
+# Personal/secret runtime files
+secrets.json
+secrets.v2.json
+settings.json
+memories.json
+
+# .NET
+desktop_agent.net/**/bin/
+desktop_agent.net/**/obj/
+desktop_agent.net/.vs/
