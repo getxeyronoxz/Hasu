@@ -352,6 +352,32 @@ function spawnDesktopAgent(): void {
     }
   }
 
+  // .NET sidecar option: faster and lighter than the Python FastAPI service.
+  // Prefer it when a published exe is available; fall back to Python otherwise.
+  const dotnetCandidates = [
+    process.env.HASU_DOTNET_AGENT_EXE,
+    path.join(process.cwd(), "agent_dist", "Hasu.DesktopAgent.exe"),
+    path.join(process.cwd(), "desktop_agent.net", "Hasu.DesktopAgent", "bin", "Release", "net10.0", "win-x64", "Hasu.DesktopAgent.exe"),
+  ].filter(Boolean) as string[];
+  const dotnetExe = dotnetCandidates.find((candidate) => fs.existsSync(candidate));
+  if (dotnetExe) {
+    try {
+      const child = spawn(dotnetExe, [], {
+        cwd: path.dirname(dotnetExe),
+        detached: true,
+        stdio: "ignore",
+        windowsHide: true,
+        env: agentEnv
+      });
+      child.unref();
+      logStartup(`AGENT_SPAWN dotnet pid=${child.pid} path=${dotnetExe}`);
+      console.log(`[Desktop Agent] Launched .NET sidecar (PID ${child.pid}).`);
+      return;
+    } catch (e: any) {
+      logError(`AGENT_SPAWN_DOTNET_FAILED: ${e?.message || e}`);
+    }
+  }
+
   // Development fallback: run the agent from source using a local Python.
   const py = findPythonRuntime();
   if (!py) {
