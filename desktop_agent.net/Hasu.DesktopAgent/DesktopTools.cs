@@ -30,6 +30,7 @@ public static class DesktopTools
                 case "getClipboard": result = new { text = GetClipboard() }; error = ""; return true;
                 case "setClipboard": SetClipboard(GetArg(args, "text")); result = new { ok = true }; error = ""; return true;
                 case "takeScreenshot":
+                    result = TakeScreenshot(); error = ""; return true;
                 case "minimizeWindow":
                     result = MinimizeWindow(GetArg(args, "name")); error = ""; return true;
                 case "maximizeWindow":
@@ -168,6 +169,13 @@ public static class DesktopTools
         if (hwnd == IntPtr.Zero) throw new InvalidOperationException("window not found");
         Win32Native.SetForegroundWindow(hwnd);
         return new { ok = true, result = "focused" };
+    }
+
+    private static object TakeScreenshot()
+    {
+        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "HasuScreenshots");
+        var path = Win32Native.SaveScreenshot(folder);
+        return new { ok = true, result = path, path };
     }
     private static class Native
     {
