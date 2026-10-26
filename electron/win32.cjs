@@ -154,6 +154,43 @@ function listWindows() {
  * One window's visible frame (physical pixels), or null when it is gone,
  * hidden or minimised. Cheap enough to poll every frame (riding along).
  */
+/**
+ * Top-level taskbars only, in the shape used by listWindows (physical pixels).
+ * Exported separately so the companion brain can offer them as sitting surfaces
+ * even though regular window enumeration hides them.
+ */
+function listTaskbars() {
+  if (!api) return [];
+  const out = [];
+  const textBuf = Buffer.alloc(512);
+  const classBuf = Buffer.alloc(512);
+  const cb = api.koffi.register((hwnd) => {
+    try {
+      if (!api.IsWindowVisible(hwnd) || api.IsIconic(hwnd)) return true;
+      const classLen = api.GetClassNameW(hwnd, classBuf, 255);
+      if (classLen <= 0) return true;
+      const cls = classBuf.subarray(0, classLen * 2).toString('utf16le');
+      if (cls !== 'Shell_TrayWnd' && cls !== 'Shell_SecondaryTrayWnd') return true;
+      const rect = {};
+      if (api.DwmGetWindowAttribute(hwnd, 9, rect, 16) !== 0) api.GetWindowRect(hwnd, rect);
+      const pid = [0];
+      api.GetWindowThreadProcessId(hwnd, pid);
+      const len = api.GetWindowTextW(hwnd, textBuf, 255);
+      const title = len > 0 ? textBuf.subarray(0, len * 2).toString('utf16le') : 'Taskbar';
+      out.push({ hwnd: Number(hwnd), pid: pid[0], title, rect });
+    } catch {
+      /* keep enumerating */
+    }
+    return true;
+  }, api.koffi.pointer(api.enumProto));
+  try {
+    api.EnumWindows(cb, 0);
+  } finally {
+    api.koffi.unregister(cb);
+  }
+  return out;
+}
+
 function windowRect(hwnd) {
   if (!api || !hwnd) return null;
   try {
@@ -166,4 +203,4 @@ function windowRect(hwnd) {
   }
 }
 
-module.exports = { available: () => !!api, startRawInput, listWindows, windowRect, hwndOf };
+module.exports = { available: () => !!api, startRawInput, listWindows, listTaskbars, windowRect, hwndOf };

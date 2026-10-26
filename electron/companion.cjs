@@ -505,13 +505,20 @@ class CompanionManager {
   windowsInZOrder() {
     if (!win32.available()) return [];
     const own = new Set(this.options.ownPids());
-    return win32
+    const apps = win32
       .listWindows()
       .filter((w) => !own.has(w.pid))
       .map((w) => {
         const rect = screen.screenToDipRect(null, { x: w.rect.left, y: w.rect.top, width: w.rect.right - w.rect.left, height: w.rect.bottom - w.rect.top });
         return { hwnd: w.hwnd, title: w.title, rect };
       });
+    const taskbars = win32.available()
+      ? win32.listTaskbars().map((w) => {
+          const rect = screen.screenToDipRect(null, { x: w.rect.left, y: w.rect.top, width: w.rect.right - w.rect.left, height: w.rect.bottom - w.rect.top });
+          return { hwnd: w.hwnd, title: 'Taskbar', rect };
+        })
+      : [];
+    return apps.concat(taskbars);
   }
 
   /** Is point (x, y) on window `index` hidden by a window above it? */
@@ -537,7 +544,8 @@ class CompanionManager {
     const out = [];
     windows.forEach((w, i) => {
       const top = w.rect.y;
-      if (top < area.y + headroom || top > area.y + area.height - 40) return;
+      const isTaskbar = w.title === 'Taskbar';
+      if (!isTaskbar && (top < area.y + headroom || top > area.y + area.height - 40)) return;
       if (probeX !== undefined && CompanionManager.covered(windows, i, probeX, top + 3)) return;
       out.push({ ...w, index: i });
     });
