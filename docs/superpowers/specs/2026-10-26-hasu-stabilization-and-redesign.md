@@ -104,6 +104,6 @@ Recommended: **.NET 10 console service with NativeAOT/trimming publish to a sing
 - Electron/window managers can regress if surface detection changes blindly.
 
 ## Open questions for the project owner
-1. Do you want the new sidecar as .NET 10 (recommended) or Rust for the absolute smallest binary?
+1. Sidecar language: **.NET 10** (confirmed). Rust rejected for this phase due to Windows UI Automation porting cost.
 2. Is the companion issue on a specific Windows build (multi-monitor/taskbar auto-hide)?
 3. Should the public repo allow external PRs, or keep direct-push workflow?
