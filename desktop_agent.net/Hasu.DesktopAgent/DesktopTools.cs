@@ -31,13 +31,13 @@ public static class DesktopTools
                 case "setClipboard": SetClipboard(GetArg(args, "text")); result = new { ok = true }; error = ""; return true;
                 case "takeScreenshot":
                 case "minimizeWindow":
+                    result = MinimizeWindow(GetArg(args, "name")); error = ""; return true;
                 case "maximizeWindow":
+                    result = MaximizeWindow(GetArg(args, "name")); error = ""; return true;
                 case "closeWindow":
+                    result = CloseWindow(GetArg(args, "name")); error = ""; return true;
                 case "switchApplication":
-                    // Stubs for the baseline: real Win32 handlers arrive in Tier 1 follow-ups.
-                    error = $"{tool} is not implemented yet in the .NET sidecar";
-                    result = null;
-                    return false;
+                    result = SwitchApplication(GetArg(args, "name")); error = ""; return true;
                 default:
                     error = $"unknown tool: {tool}";
                     result = null;
@@ -140,6 +140,38 @@ public static class DesktopTools
         Native.SetClipboard(text);
     }
 
+
+    private static object MinimizeWindow(string name)
+    {
+        var hwnd = Win32Native.FindWindowByTitle(name);
+        if (hwnd == IntPtr.Zero) throw new InvalidOperationException("window not found");
+        Win32Native.ShowWindow(hwnd, Win32Native.SW_MINIMIZE);
+        return new { ok = true, result = "minimized" };
+    }
+
+    private static object MaximizeWindow(string name)
+    {
+        var hwnd = Win32Native.FindWindowByTitle(name);
+        if (hwnd == IntPtr.Zero) throw new InvalidOperationException("window not found");
+        Win32Native.ShowWindow(hwnd, Win32Native.SW_MAXIMIZE);
+        return new { ok = true, result = "maximized" };
+    }
+
+    private static object CloseWindow(string name)
+    {
+        var hwnd = Win32Native.FindWindowByTitle(name);
+        if (hwnd == IntPtr.Zero) throw new InvalidOperationException("window not found");
+        Win32Native.PostMessageW(hwnd, Win32Native.WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+        return new { ok = true, result = "close sent" };
+    }
+
+    private static object SwitchApplication(string name)
+    {
+        var hwnd = Win32Native.FindWindowByTitle(name);
+        if (hwnd == IntPtr.Zero) throw new InvalidOperationException("window not found");
+        Win32Native.SetForegroundWindow(hwnd);
+        return new { ok = true, result = "focused" };
+    }
     private static class Native
     {
         // Minimal placeholder; full Win32 clipboard P/Invoke arrives with Tier 1.
