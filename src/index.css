@@ -23,3 +23,27 @@
   animation: float 6s ease-in-out infinite;
 }
 
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float { animation: none; }
+  .theme-transition { transition: none !important; }
+  *, ::before, ::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Calm UI tokens (used by new components) */
+:root {
+  --hs-radius-card: 12px;
+  --hs-radius-pill: 9999px;
+  --hs-space-1: 4px;
+  --hs-space-2: 8px;
+  --hs-space-3: 12px;
+  --hs-space-4: 16px;
+  --hs-space-6: 24px;
+  --hs-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
