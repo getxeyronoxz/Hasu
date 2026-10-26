@@ -1,0 +1,33 @@
+Hasu 1.5.2 - your 3D AI companion for Windows
+================================================
+
+INSTALL
+1. Run Hasu-Setup-1.5.2.exe.
+   If Windows shows "Windows protected your PC", click "More info" -> "Run anyway".
+   (The installer is not signed with a paid certificate; that is why Windows warns.)
+2. Choose where to install and finish. Open Hasu from the desktop shortcut.
+
+FIRST START
+1. API key: Hasu thinks with Google Gemini, using YOUR OWN free key.
+   - Go to https://aistudio.google.com -> "Get API key" -> create a key.
+   - Paste it into Hasu. It is stored encrypted on your PC only.
+   - Free keys have daily limits; long PC tasks may pause until they reset.
+2. Character: Hasu does not come with a 3D model.
+   - Press "Import my character" and choose an MMD model
+     (.pmx file, or a .zip / folder that contains one).
+   - Only use models whose licence allows you to use them.
+3. Follow the short setup (permissions, how chatty she is, desktop companion).
+
+SLOW PC OR CRASHES?
+Settings -> Character -> Graphics quality:
+  Auto (recommended) / High / Medium / Optimized / Potato PC
+Lower = less GPU memory. Auto lowers itself if she crashes.
+
+USEFUL
+- Talk: press the power button, or type in the message box.
+- Stop everything at once: Ctrl + Alt + Shift + S
+- Desktop companion: drag her onto any window and she sits there.
+- She asks before risky things (sending messages, deleting, installing).
+
+REQUIREMENTS
+Windows 10 or 11 (64-bit), internet connection, microphone for voice.
