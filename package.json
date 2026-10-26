@@ -1,7 +1,7 @@
 {
   "name": "hasu",
   "productName": "Hasu",
-  "description": "Hasu — a private 3D AI desktop companion powered by each user's own Gemini API key.",
+  "description": "Hasu \u2014 a private 3D AI desktop companion powered by each user's own Gemini API key.",
   "author": "Hasu",
   "private": true,
   "version": "1.5.2",
@@ -28,7 +28,8 @@
     "test:characters": "node --import tsx --test tests/characters.test.ts tests/gltf.test.ts",
     "test:agent": "node --import tsx --test tests/core.test.ts tests/models.test.ts tests/agentLoop.test.ts tests/presence.test.ts tests/chatOpen.test.ts tests/accent.test.ts",
     "test": "npm run lint && npm run test:agent && npm run test:characters && npm run test:python",
-    "import:character": "tsx tools/import-character.ts"
+    "import:character": "tsx tools/import-character.ts",
+    "test:dotnet-agent": "powershell -NoProfile -File scripts/test-dotnet-agent.ps1"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
