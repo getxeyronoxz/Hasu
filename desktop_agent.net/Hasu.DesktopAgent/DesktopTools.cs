@@ -1,3 +1,4 @@
+using NAudio.CoreAudioApi;
 using System.Diagnostics;
 using System.Text.Json;
 public static class DesktopTools
@@ -14,7 +15,11 @@ public static class DesktopTools
         "switchApplication",
         "getClipboard",
         "setClipboard",
-        "takeScreenshot"
+        "takeScreenshot",
+        "volumeUp",
+        "volumeDown",
+        "setVolume",
+        "muteToggle"
     ];
 
     public static bool TryExecute(string tool, JsonElement args, out object? result, out string error)
@@ -27,6 +32,10 @@ public static class DesktopTools
                 case "openApplication": result = OpenApplication(GetArg(args, "name")); error = ""; return true;
                 case "openFolder": result = OpenFolder(GetArg(args, "name")); error = ""; return true;
                 case "openWebsite": result = OpenWebsite(GetArg(args, "url"), GetArg(args, "site")); error = ""; return true;
+                case "volumeUp": result = VolumeUp(); error = ""; return true;
+                case "volumeDown": result = VolumeDown(); error = ""; return true;
+                case "setVolume": result = SetVolume(int.TryParse(GetArg(args, "percent"), out var pp) ? pp : GetArg(args, "value") is string v && int.TryParse(v, out var p2) ? p2 : 50); error = ""; return true;
+                case "muteToggle": result = MuteToggle(); error = ""; return true;
                 case "getClipboard": result = new { text = GetClipboard() }; error = ""; return true;
                 case "setClipboard": SetClipboard(GetArg(args, "text")); result = new { ok = true }; error = ""; return true;
                 case "takeScreenshot":
@@ -176,6 +185,34 @@ public static class DesktopTools
         var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "HasuScreenshots");
         var path = Win32Native.SaveScreenshot(folder);
         return new { ok = true, result = path, path };
+    }
+
+    private static object VolumeUp()
+    {
+        using var dev = new MMDeviceEnumerator().GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+        dev.AudioEndpointVolume.MasterVolumeLevelScalar = Math.Min(1.0f, dev.AudioEndpointVolume.MasterVolumeLevelScalar + 0.1f);
+        return new { ok = true, volume = (int)(dev.AudioEndpointVolume.MasterVolumeLevelScalar * 100) };
+    }
+
+    private static object VolumeDown()
+    {
+        using var dev = new MMDeviceEnumerator().GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+        dev.AudioEndpointVolume.MasterVolumeLevelScalar = Math.Max(0.0f, dev.AudioEndpointVolume.MasterVolumeLevelScalar - 0.1f);
+        return new { ok = true, volume = (int)(dev.AudioEndpointVolume.MasterVolumeLevelScalar * 100) };
+    }
+
+    private static object SetVolume(int percent)
+    {
+        using var dev = new MMDeviceEnumerator().GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+        dev.AudioEndpointVolume.MasterVolumeLevelScalar = Math.Clamp(percent / 100f, 0f, 1f);
+        return new { ok = true, volume = (int)(dev.AudioEndpointVolume.MasterVolumeLevelScalar * 100) };
+    }
+
+    private static object MuteToggle()
+    {
+        using var dev = new MMDeviceEnumerator().GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+        dev.AudioEndpointVolume.Mute = !dev.AudioEndpointVolume.Mute;
+        return new { ok = true, muted = dev.AudioEndpointVolume.Mute };
     }
     private static class Native
     {
