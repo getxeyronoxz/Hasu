@@ -129,15 +129,12 @@ public static class DesktopTools
 
     private static string GetClipboard()
     {
-        // Win32 clipboard (STA-independent enough for text).
-        if (!Native.TryGetClipboard(out var text))
-            return "";
-        return text;
+        return Win32Native.GetClipboardText();
     }
 
     private static void SetClipboard(string text)
     {
-        Native.SetClipboard(text);
+        Win32Native.SetClipboardText(text);
     }
 
 

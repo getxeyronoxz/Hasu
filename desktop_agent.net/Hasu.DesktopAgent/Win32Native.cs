@@ -38,3 +38,49 @@ internal static partial class Win32Native
         return found;
     }
 }
+
+
+internal static partial class Win32Native
+{
+    public const uint CF_UNICODETEXT = 13;
+
+    [DllImport("user32.dll")] public static extern bool OpenClipboard(IntPtr hwndNewOwner);
+    [DllImport("user32.dll")] public static extern bool CloseClipboard();
+    [DllImport("user32.dll")] public static extern bool EmptyClipboard();
+    [DllImport("user32.dll")] public static extern IntPtr GetClipboardData(uint uFormat);
+    [DllImport("user32.dll")] public static extern IntPtr SetClipboardData(uint uFormat, IntPtr hMem);
+    [DllImport("kernel32.dll")] public static extern IntPtr GlobalAlloc(uint uFlags, nuint dwBytes);
+    [DllImport("kernel32.dll")] public static extern IntPtr GlobalLock(IntPtr hMem);
+    [DllImport("kernel32.dll")] public static extern bool GlobalUnlock(IntPtr hMem);
+    [DllImport("kernel32.dll")] public static extern nuint GlobalSize(IntPtr hMem);
+
+    public static string GetClipboardText()
+    {
+        if (!OpenClipboard(IntPtr.Zero)) return "";
+        try
+        {
+            var h = GetClipboardData(CF_UNICODETEXT);
+            if (h == IntPtr.Zero) return "";
+            var ptr = GlobalLock(h);
+            if (ptr == IntPtr.Zero) return "";
+            try { return Marshal.PtrToStringUni(ptr) ?? ""; }
+            finally { GlobalUnlock(h); }
+        }
+        finally { CloseClipboard(); }
+    }
+
+    public static void SetClipboardText(string text)
+    {
+        if (!OpenClipboard(IntPtr.Zero)) return;
+        try
+        {
+            EmptyClipboard();
+            var h = GlobalAlloc(0x0042, (nuint)((text.Length + 1) * 2));
+            var ptr = GlobalLock(h);
+            try { Marshal.Copy(text.ToCharArray(), 0, ptr, text.Length); Marshal.WriteInt16(ptr, text.Length * 2, 0); }
+            finally { GlobalUnlock(h); }
+            SetClipboardData(CF_UNICODETEXT, h);
+        }
+        finally { CloseClipboard(); }
+    }
+}
